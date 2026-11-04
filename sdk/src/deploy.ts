@@ -60,6 +60,7 @@ function keyScVal(key: VerificationKeyJson): xdr.ScVal {
     ["delta2", xdr.ScVal.scvBytes(g2(key.vk_delta_2))],
     ["ic", xdr.ScVal.scvVec(key.IC.map((p) => xdr.ScVal.scvBytes(g1(p))))],
   ];
+  entries.sort(([left], [right]) => left < right ? -1 : left > right ? 1 : 0);
   return xdr.ScVal.scvMap(entries.map(([name, val]) => new xdr.ScMapEntry({ key: xdr.ScVal.scvSymbol(name), val })));
 }
 
