@@ -7,6 +7,11 @@ Stello is a Soroban identity registry and compliant custom token prototype. The 
 - `circuits/`: circuit, sample input shape, and development setup script.
 - `contracts/`: verifier, policy registry, and custom compliant token.
 - `sdk/`: TypeScript local prover and Soroban transaction helpers.
+- `web/`: static, responsive hackathon demo UI for Vercel.
+
+## Hosted demo UI
+
+The `web/` folder is a static front end and `vercel.json` sets it as Vercel's output directory. Import this repository in Vercel with the project root set to the repository root; no build command or environment variables are required. The UI is explicitly a prototype: it can request Stellar Testnet wallet access through Freighter, but it does not claim to generate a proof or submit an on-chain transaction. Those actions need the circuit artifacts and deployed contract addresses first.
 
 ## Build
 
