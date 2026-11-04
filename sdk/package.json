@@ -4,8 +4,21 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "scripts": { "build": "tsc -p tsconfig.json" },
-  "dependencies": { "@stellar/stellar-sdk": "^17.4.0", "circomlib": "^2.0.5", "snarkjs": "^0.7.5" },
-  "overrides": { "underscore": "^1.13.8" },
-  "devDependencies": { "@types/node": "^22.10.0", "typescript": "^5.7.2" }
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "initialize:testnet": "node dist/deploy.js"
+  },
+  "dependencies": {
+    "@stellar/stellar-sdk": "^17.4.0",
+    "circomlib": "^2.0.5",
+    "snarkjs": "^0.7.5"
+  },
+  "overrides": {
+    "underscore": "^1.13.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "circom2": "^0.2.23",
+    "typescript": "^5.7.2"
+  }
 }

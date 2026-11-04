@@ -10,7 +10,7 @@ Stello is a Soroban identity registry and compliant custom token prototype. The 
 
 ## Build
 
-Install Circom 2.x, OpenSSL, and Stellar CLI 25.2.0 or newer, then run `npm install` in `sdk/`. From the repository root:
+Install Node.js, Rust with the `wasm32v1-none` target, and Stellar CLI 25.2.0 or newer. Run `npm install` in `sdk/` to install the pinned Circom compiler and SDK dependencies. From the repository root:
 
 ```sh
 make circuits
@@ -27,6 +27,17 @@ Initialize the registry with an admin, verifier address, issuer key commitment, 
 The wallet commitment is SHA-256 of the Soroban `ScVal(Address)` XDR encoding, truncated to 248 high-order bits and left-padded to 32 bytes. `hashSorobanAddress` in the SDK computes the prover input. The registry recomputes it from the authenticated caller's address. The registry pins all policy signals before invoking the verifier, preventing proofs against a prover-selected issuer or sanctions root.
 
 The token contract maintains its own balances and allowances. It checks both parties' registry status on transfers and delegated transfers, and checks the recipient on mint. It is not a Stellar Asset Contract: a SAC cannot be made to intercept arbitrary transfer operations with a wrapper contract.
+
+## Testnet deployment
+
+This flow publishes contracts to **Testnet only**. It uses the local single-party circuit setup; the resulting verifier is a development demonstration and must not be used for real compliance decisions or funds.
+
+1. Install Rust with the `wasm32v1-none` target, Node.js, Git Bash, and Stellar CLI 25.2.0 or newer. From the repository root run `npm.cmd install --prefix sdk`, then `bash circuits/build_circuits.sh` and `stellar contract build --manifest-path contracts/stello_verifier/Cargo.toml`, repeating the build command for `stello_registry` and `stello_token_wrapper`.
+2. Generate a funded testnet deployer with `stellar keys generate stello-admin --network testnet --fund`. Deploy each built `.wasm` using `stellar contract deploy --wasm <path> --source-account stello-admin --network testnet`. Deploy verifier, registry, and wrapper in that order; record each returned `C...` contract ID. The CLI distinguishes uploaded Wasm from an instantiated contract, so use `contract deploy` for these instances.
+3. Prepare the policy parameters from the same issuer key and sanctions tree used by the credential issuer: `STELLO_ISSUER_COMMITMENT` and `STELLO_SANCTIONS_ROOT` are 32-byte hex values without a prefix. Set the admin secret in `STELLO_ADMIN_SECRET` and the three IDs in `STELLO_VERIFIER_ID`, `STELLO_REGISTRY_ID`, and `STELLO_WRAPPER_ID`. Never commit or paste the secret into source control.
+4. From `sdk/`, run `npm.cmd run build`, then set `STELLO_ISSUER_COMMITMENT`, `STELLO_SANCTIONS_ROOT`, and optionally `STELLO_CURRENT_YEAR`, `STELLO_MIN_AGE`, and `STELLO_REQUIRED_LEVEL`, then run `npm.cmd run initialize:testnet`. The SDK converts the generated snarkjs verification key to Soroban XDR values and initializes verifier, registry, and wrapper in order. Each transaction is simulated, signed locally, submitted, and polled for final status.
+
+For production, replace the local setup with an independently reviewed, publicly verifiable multi-party ceremony, verify the generated key and circuit artifacts, and complete an external security review before deployment.
 
 ## Operational limitations
 

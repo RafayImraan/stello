@@ -1,7 +1,7 @@
 .PHONY: circuits build test
 
 circuits:
-	cd circuits && bash build_circuits.sh
+	node circuits/build_circuits.mjs
 
 build:
 	stellar contract build --manifest-path contracts/stello_verifier/Cargo.toml
