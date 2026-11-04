@@ -1,0 +1,10 @@
+target/
+node_modules/
+dist/
+circuits/build/
+*.zkey
+*.ptau
+*.wasm
+*.r1cs
+*.sym
+.env*

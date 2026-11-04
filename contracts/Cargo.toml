@@ -1,0 +1,18 @@
+[workspace]
+resolver = "2"
+members = ["stello_verifier", "stello_registry", "stello_token_wrapper"]
+
+[workspace.package]
+edition = "2021"
+license = "Apache-2.0"
+rust-version = "1.91"
+
+[workspace.dependencies]
+soroban-sdk = { version = "29.0.1", default-features = false }
+
+[profile.release]
+opt-level = "z"
+overflow-checks = true
+lto = true
+codegen-units = 1
+panic = "abort"
