@@ -37,10 +37,11 @@ template IdentityVerifier(DEPTH) {
     addressCommitment.inputs[1] <== userSecret;
 
     // Signed message binds address, birth year, and secret commitment.
-    component attrs = Poseidon(3);
+    component attrs = Poseidon(4);
     attrs.inputs[0] <== userAddressHash;
     attrs.inputs[1] <== userBirthYear;
     attrs.inputs[2] <== addressCommitment.out;
+    attrs.inputs[3] <== currentYear;
     signal input issuerPublicKeyX;
     signal input issuerPublicKeyY;
     component issuerKeyHash = Poseidon(2);
@@ -49,23 +50,27 @@ template IdentityVerifier(DEPTH) {
     issuerKeyHash.out === issuerPublicKey;
     component sig = EdDSAPoseidonVerifier();
     sig.enabled <== 1;
-    sig.A[0] <== issuerPublicKeyX;
-    sig.A[1] <== issuerPublicKeyY;
+    sig.Ax <== issuerPublicKeyX;
+    sig.Ay <== issuerPublicKeyY;
     sig.S <== signature[2];
-    sig.R8[0] <== signature[0];
-    sig.R8[1] <== signature[1];
+    sig.R8x <== signature[0];
+    sig.R8y <== signature[1];
     sig.M <== attrs.out;
 
     // Sparse-tree inclusion of zero proves non-membership.
     signal nodes[DEPTH + 1];
+    signal leftNodes[DEPTH];
+    signal rightNodes[DEPTH];
     component pathHash[DEPTH];
     component addressBits = Num2Bits(DEPTH);
     addressBits.in <== userAddressHash;
     nodes[0] <== 0;
     for (var i = 0; i < DEPTH; i++) {
         pathHash[i] = Poseidon(2);
-        pathHash[i].inputs[0] <== nodes[i] * (1 - addressBits.out[i]) + sanctionsListMerklePath[i] * addressBits.out[i];
-        pathHash[i].inputs[1] <== nodes[i] * addressBits.out[i] + sanctionsListMerklePath[i] * (1 - addressBits.out[i]);
+        leftNodes[i] <== nodes[i] + addressBits.out[i] * (sanctionsListMerklePath[i] - nodes[i]);
+        rightNodes[i] <== sanctionsListMerklePath[i] + addressBits.out[i] * (nodes[i] - sanctionsListMerklePath[i]);
+        pathHash[i].inputs[0] <== leftNodes[i];
+        pathHash[i].inputs[1] <== rightNodes[i];
         nodes[i + 1] <== pathHash[i].out;
     }
     nodes[DEPTH] === sanctionsMerkleRoot;

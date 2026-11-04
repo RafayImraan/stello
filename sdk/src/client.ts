@@ -1,11 +1,11 @@
-import { Address, Contract, SorobanRpc, TransactionBuilder, xdr, type Account } from "@stellar/stellar-sdk";
+import { Address, Contract, rpc, TransactionBuilder, xdr, type Account } from "@stellar/stellar-sdk";
 import { hashSorobanAddress, type ProofBundle } from "./prover.js";
 
 export interface StelloConfig { rpcUrl: string; networkPassphrase: string; registryId: string; wrapperId: string }
 
 export class StelloClient {
-  readonly rpc: SorobanRpc.Server;
-  constructor(readonly config: StelloConfig) { this.rpc = new SorobanRpc.Server(config.rpcUrl); }
+  readonly rpc: rpc.Server;
+  constructor(readonly config: StelloConfig) { this.rpc = new rpc.Server(config.rpcUrl); }
 
   private invoke(source: Account, contractId: string, method: string, args: xdr.ScVal[]) {
     const contract = new Contract(contractId);
@@ -22,7 +22,8 @@ export class StelloClient {
   }
 
   async compliantTransfer(source: Account, destination: string, amount: bigint) {
-    const args = [new Address(source.accountId()).toScVal(), new Address(destination).toScVal(), xdr.ScVal.scvI128(new xdr.Int128Parts({ hi: 0, lo: amount.toString() }))];
+    const parts = xdr.bigIntTo128Parts(amount, true);
+    const args = [new Address(source.accountId()).toScVal(), new Address(destination).toScVal(), xdr.ScVal.scvI128(new xdr.Int128Parts({ hi: parts.hi, lo: parts.lo }))];
     return this.invoke(source, this.config.wrapperId, "transfer", args);
   }
 

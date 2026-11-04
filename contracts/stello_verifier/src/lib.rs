@@ -44,6 +44,9 @@ enum StorageKey { Admin, Vk }
 #[contract]
 pub struct StelloVerifier;
 
+const INSTANCE_TTL_THRESHOLD: u32 = 4_000_000;
+const INSTANCE_TTL_EXTEND: u32 = 5_000_000;
+
 #[contractimpl]
 impl StelloVerifier {
     pub fn initialize(env: Env, admin: Address, key: VerificationKey) -> Result<(), VerifierError> {
@@ -52,11 +55,12 @@ impl StelloVerifier {
         if key.ic.len() != 6 { return Err(VerifierError::WrongInputCount); }
         env.storage().instance().set(&StorageKey::Admin, &admin);
         env.storage().instance().set(&StorageKey::Vk, &key);
-        env.storage().instance().extend_ttl(100_000, 200_000);
+        env.storage().instance().extend_ttl(INSTANCE_TTL_THRESHOLD, INSTANCE_TTL_EXTEND);
         Ok(())
     }
 
     pub fn verify_proof(env: Env, proof: Bytes, public_inputs: Vec<BytesN<32>>) -> Result<bool, VerifierError> {
+        env.storage().instance().extend_ttl(INSTANCE_TTL_THRESHOLD, INSTANCE_TTL_EXTEND);
         let key: VerificationKey = env.storage().instance().get(&StorageKey::Vk).ok_or(VerifierError::NotInitialized)?;
         if public_inputs.len() != 5 { return Err(VerifierError::WrongInputCount); }
         if proof.len() != 256 { return Err(VerifierError::MalformedProof); }
@@ -72,13 +76,13 @@ impl StelloVerifier {
             points.push_back(Bn254G1Affine::from_bytes(key.ic.get(i as u32 + 1).ok_or(VerifierError::WrongInputCount)?));
             scalars.push_back(soroban_sdk::crypto::bn254::Bn254Fr::from_bytes(input));
         }
-        let acc = env.crypto().bn254().g1_msm(&points, &scalars).map_err(|_| VerifierError::MalformedProof)?;
+        let acc = env.crypto().bn254().g1_msm(points, scalars);
         let neg_alpha = negate_g1(&env, &key.alpha1);
         let neg_acc = negate_g1(&env, &acc.to_bytes());
         let neg_c = negate_g1(&env, &c.to_bytes());
         let g1 = vec![&env, a, Bn254G1Affine::from_bytes(neg_alpha), Bn254G1Affine::from_bytes(neg_acc), Bn254G1Affine::from_bytes(neg_c)];
         let g2 = vec![&env, b, Bn254G2Affine::from_bytes(key.beta2), Bn254G2Affine::from_bytes(key.gamma2), Bn254G2Affine::from_bytes(key.delta2)];
-        env.crypto().bn254().pairing_check(&g1, &g2).map_err(|_| VerifierError::MalformedProof)
+        Ok(env.crypto().bn254().pairing_check(g1, g2))
     }
 }
 

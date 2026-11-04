@@ -4,7 +4,9 @@ circuits:
 	cd circuits && bash build_circuits.sh
 
 build:
-	cargo build --manifest-path contracts/Cargo.toml --workspace --release --target wasm32v1-none
+	stellar contract build --manifest-path contracts/stello_verifier/Cargo.toml
+	stellar contract build --manifest-path contracts/stello_registry/Cargo.toml
+	stellar contract build --manifest-path contracts/stello_token_wrapper/Cargo.toml
 
 test:
 	cargo test --manifest-path contracts/Cargo.toml --workspace
