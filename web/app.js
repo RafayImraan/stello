@@ -1,52 +1,53 @@
 (() => {
   const connectButton = document.querySelector('#connect');
-  const walletLabel = document.querySelector('#wallet-short');
-  const badge = document.querySelector('.status-badge');
+  const verifyButton = document.querySelector('#verify');
+  const walletAddress = document.querySelector('#wallet-address');
+  const setupNote = document.querySelector('#setup-note');
   const toast = document.querySelector('#toast');
-  const message = document.querySelector('#proof-message');
   let toastTimer;
 
   function notify(text) {
     toast.textContent = text;
     toast.classList.add('show');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => toast.classList.remove('show'), 3500);
-  }
-
-  function displayWallet(address) {
-    walletLabel.textContent = `${address.slice(0, 5)}…${address.slice(-5)}`;
-    connectButton.innerHTML = `${address.slice(0, 5)}…${address.slice(-5)} <span>✓</span>`;
-    badge.innerHTML = '<i></i> WALLET CONNECTED';
-    badge.classList.add('connected');
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 3200);
   }
 
   connectButton.addEventListener('click', async () => {
-    const freighter = window.freighterApi;
-    if (!freighter) {
-      notify('Install Freighter to connect a Stellar Testnet wallet.');
+    const wallet = window.freighterApi;
+    if (!wallet) {
+      notify('Freighter wallet not found.');
       window.open('https://www.freighter.app/', '_blank', 'noopener,noreferrer');
       return;
     }
+
     connectButton.disabled = true;
+    connectButton.textContent = 'Connecting…';
     try {
-      const network = await freighter.getNetwork();
+      const network = await wallet.getNetwork();
       if (network.network !== 'TESTNET') {
-        notify('Switch Freighter to Stellar Testnet to continue.');
+        notify('Switch Freighter to Stellar Testnet first.');
+        connectButton.textContent = 'Connect wallet';
         return;
       }
-      const result = await freighter.requestAccess();
-      if (result.error) throw new Error(result.error.message || 'Wallet access was declined');
-      displayWallet(result.address);
-      notify('Wallet connected. On-chain contracts are not configured in this demo yet.');
+
+      const result = await wallet.requestAccess();
+      if (result.error) throw new Error(result.error.message || 'Wallet access denied.');
+      const address = result.address;
+      walletAddress.textContent = `${address.slice(0, 8)}…${address.slice(-6)}`;
+      connectButton.textContent = `${address.slice(0, 5)}…${address.slice(-4)} ✓`;
+      verifyButton.disabled = false;
+      setupNote.textContent = 'Connect a deployed Stello verifier to submit a proof.';
+      notify('Wallet connected.');
     } catch (error) {
+      connectButton.textContent = 'Connect wallet';
       notify(error instanceof Error ? error.message : 'Could not connect wallet.');
     } finally {
       connectButton.disabled = false;
     }
   });
 
-  document.querySelector('#start-proof').addEventListener('click', () => {
-    message.textContent = 'Local proof generation needs a private issuer credential and finalized circuit artifacts. No proof or transaction was created.';
-    notify('Proof generation is not enabled in this hosted prototype.');
+  verifyButton.addEventListener('click', () => {
+    notify('Identity verification is not configured yet.');
   });
 })();
