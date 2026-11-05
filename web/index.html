@@ -14,7 +14,7 @@
   <body>
     <header class="topbar">
       <a class="brand" href="/" aria-label="Stello"><span class="brand-icon">s</span>stello</a>
-      <div class="top-right"><span class="network"><i></i> Stellar Testnet</span><button id="connect" class="button button-dark">Connect wallet</button></div>
+      <div class="top-right"><span id="network-status" class="network"><i></i> <span id="header-network">Stellar Testnet</span></span><button id="connect" class="button button-dark">Connect wallet</button></div>
     </header>
     <main>
       <div class="page-heading"><div><div class="eyebrow">IDENTITY</div><h1>Your identity</h1></div></div>
@@ -23,7 +23,7 @@
         <h2 id="identity-title">Private identity verification</h2>
         <p class="card-copy">Verify your eligibility without sharing personal information on-chain.</p>
         <div class="rule"></div>
-        <div class="fields"><div><span>Wallet</span><strong id="wallet-address">Not connected</strong></div><div><span>Network</span><strong>Stellar Testnet</strong></div></div>
+        <div class="fields"><div><span>Wallet</span><strong id="wallet-address">Not connected</strong></div><div><span>Network</span><strong id="wallet-network">Stellar Testnet</strong></div></div>
         <button id="verify" class="button button-green" disabled>Verify identity <span>→</span></button>
         <p class="setup-note" id="setup-note">Connect a wallet to continue.</p>
       </section>
