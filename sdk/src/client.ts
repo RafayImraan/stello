@@ -16,10 +16,10 @@ export class StelloClient {
 
   async registerIdentity(source: Account, proof: ProofBundle, validitySeconds: bigint) {
     if (validitySeconds <= 0n || validitySeconds > 15_552_000n) throw new RangeError("Identity validity must be between 1 second and 180 days");
-    if (proof.publicSignals.length !== 5 || BigInt(String(proof.publicSignals[4])) !== BigInt(hashSorobanAddress(source.accountId()))) {
+    if (proof.publicSignals.length !== 5 || BigInt(String(proof.publicSignals[4])) !== BigInt(await hashSorobanAddress(source.accountId()))) {
       throw new Error("Proof is not bound to the registering Stellar address");
     }
-    const args = [new Address(source.accountId()).toScVal(), xdr.ScVal.scvBytes(Buffer.from(proof.proofBytes)), xdr.ScVal.scvVec(proof.publicInputs.map((b) => xdr.ScVal.scvBytes(Buffer.from(b)))), xdr.ScVal.scvU64(validitySeconds)];
+    const args = [new Address(source.accountId()).toScVal(), xdr.ScVal.scvBytes(proof.proofBytes), xdr.ScVal.scvVec(proof.publicInputs.map((b) => xdr.ScVal.scvBytes(b))), xdr.ScVal.scvU64(validitySeconds)];
     return this.invoke(source, this.config.registryId, "register_identity", args);
   }
 

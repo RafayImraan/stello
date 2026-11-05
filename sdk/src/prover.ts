@@ -1,15 +1,18 @@
 import { groth16 } from "snarkjs";
-import { createHash } from "node:crypto";
 import { Address } from "@stellar/stellar-sdk";
 import type { Proof, PublicSignals } from "snarkjs";
 
 export interface ProofBundle { proof: Proof; publicSignals: PublicSignals; proofBytes: Uint8Array; publicInputs: Uint8Array[] }
 
 /** Matches the registry's SHA256(ScVal(Address) XDR), truncated to 248 bits. */
-export function hashSorobanAddress(accountId: string): string {
+export async function hashSorobanAddress(accountId: string): Promise<string> {
   const xdr = new Address(accountId).toScVal().toXDR();
-  const digest = createHash("sha256").update(xdr).digest();
-  return BigInt(`0x00${digest.subarray(0, 31).toString("hex")}`).toString(10);
+  const xdrBuffer = new ArrayBuffer(xdr.byteLength);
+  new Uint8Array(xdrBuffer).set(xdr);
+  const digest = new Uint8Array(await globalThis.crypto.subtle.digest("SHA-256", xdrBuffer));
+  let hex = "";
+  for (const byte of digest.subarray(0, 31)) hex += byte.toString(16).padStart(2, "0");
+  return BigInt(`0x00${hex}`).toString(10);
 }
 
 function bigint32(value: string | number | bigint): Uint8Array {
