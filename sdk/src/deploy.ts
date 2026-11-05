@@ -98,6 +98,7 @@ async function invoke(
 
 /** Initialize already-deployed testnet contracts in dependency order. */
 export async function initializeTestnet(config: TestnetSetup): Promise<{ verifier: string; registry: string; wrapper: string }> {
+  if (config.networkPassphrase !== "Test SDF Network ; September 2015") throw new Error("initializeTestnet only permits the Stellar Testnet passphrase");
   if (!Number.isInteger(config.currentYear) || config.currentYear < 2000 || config.currentYear > 9999) throw new RangeError("currentYear must be an integer from 2000 through 9999");
   if (!Number.isInteger(config.minAge) || config.minAge < 0 || config.minAge > 120) throw new RangeError("minAge must be an integer from 0 through 120");
   if (config.requiredLevel !== undefined && (!Number.isInteger(config.requiredLevel) || config.requiredLevel < 0)) throw new RangeError("requiredLevel must be a non-negative integer");

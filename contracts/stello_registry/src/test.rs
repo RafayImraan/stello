@@ -11,6 +11,15 @@ fn initializes_and_reports_unverified_user() {
     let id = env.register(StelloRegistry, ());
     let client = StelloRegistryClient::new(&env, &id);
     env.mock_all_auths();
-    client.initialize(&admin, &verifier, &BytesN::from_array(&env, &[1; 32]), &BytesN::from_array(&env, &[2; 32]), &2026, &18).unwrap();
+    client
+        .initialize(
+            &admin,
+            &verifier,
+            &BytesN::from_array(&env, &[1; 32]),
+            &BytesN::from_array(&env, &[2; 32]),
+            &2026,
+            &18,
+        )
+        .unwrap();
     assert!(!client.is_verified(&Address::generate(&env), &1));
 }

@@ -1,6 +1,6 @@
 # Stello
 
-Stello is a Soroban identity registry and compliant custom token prototype. The Circom circuit proves an age threshold, a zero leaf in a 248-level sparse sanctions tree, and an issuer's EdDSA-Poseidon signature. Proof generation runs client-side. Soroban's BN254 host functions perform the Groth16 check; deploy to a Stellar protocol/network that enables those functions (Protocol 25 or newer).
+Stello is a Soroban identity registry and compliance-gated custom token. The Circom circuit proves an age threshold, a zero leaf in a 248-level sparse sanctions tree, and an issuer's EdDSA-Poseidon signature. Proof generation runs locally with the SDK. Soroban's BN254 host functions perform the Groth16 check; deploy to a Stellar network that enables those functions (Protocol 25 or newer).
 
 ## Layout
 
@@ -21,7 +21,10 @@ Install Node.js, Rust with the `wasm32v1-none` target, and Stellar CLI 25.2.0 or
 make circuits
 make build
 make test
+make demo-proof
 ```
+
+`make demo-proof` creates a temporary issuer credential, empty sanctions tree, and wallet commitment, generates a Groth16 proof locally, then verifies it with snarkjs. Its wallet commitment is random unless you run `node circuits/generate_demo_input.mjs <year> <min-age> <stellar-address>`. The generated issuer key and empty sanctions tree are demonstration-only. `circuits/build/demo-policy.json` contains the matching public policy values in decimal and hex. `circuits/inputs.json.example` documents the witness shape; use the generator for a satisfiable development witness.
 
 The circuit setup script creates a **local development ceremony**. Never deploy its verification key. Run an independently reviewed, publicly verifiable multi-party ceremony and pin that ceremony's verification key in `stello_verifier` for production. The verifier initializer accepts the key and requires admin authorization; initialize it before the registry.
 
@@ -47,7 +50,8 @@ For production, replace the local setup with an independently reviewed, publicly
 ## Operational limitations
 
 - Age and sanctions policy are only as current as the admin-updated public values. The registry does not infer a calendar year from ledger time or fetch sanctions data.
+- Updating the issuer, sanctions root, year, or minimum age increments the policy version and invalidates existing identity registrations; users must register again against the new policy.
 - Identity validity is capped at 180 days. Contract instances and persistent records refresh their TTL on use; users who remain inactive beyond the network's maximum Soroban TTL need an archival restoration/renewal flow before accessing state.
 - Compliance level is currently a single baseline level (`1`); the circuit does not prove multiple tiers.
 - The development setup is single-party and must not be used for real funds or compliance decisions.
-- The SDK returns unsigned transaction envelopes for wallet signing; callers must simulate/prepare and submit through their wallet/application flow.
+- The SDK builds unsigned transaction envelopes; `submit()` prepares them, obtains the signature through a caller-supplied wallet signer, submits them, and waits for ledger confirmation.
