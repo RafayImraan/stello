@@ -16,8 +16,7 @@
   connectButton.addEventListener('click', async () => {
     const wallet = window.freighterApi;
     if (!wallet) {
-      notify('Freighter wallet not found.');
-      window.open('https://www.freighter.app/', '_blank', 'noopener,noreferrer');
+      notify('Wallet not detected. Allow Varial on this site in Chrome extensions, then refresh.');
       return;
     }
 
@@ -28,8 +27,7 @@
         const availability = await wallet.isConnected();
         if (availability.error) throw new Error(availability.error.message || 'Could not reach Freighter.');
         if (!availability.isConnected) {
-          notify('Freighter is not available in this browser.');
-          window.open('https://www.freighter.app/', '_blank', 'noopener,noreferrer');
+          notify('Wallet unavailable. Allow Varial on this site in Chrome extensions, then refresh.');
           connectButton.textContent = 'Connect wallet';
           return;
         }

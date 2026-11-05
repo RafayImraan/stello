@@ -11,7 +11,7 @@ Stello is a Soroban identity registry and compliance-gated custom token. The Cir
 
 ## Hosted demo UI
 
-The `web/` folder is the static front end and `vercel.json` sets it as Vercel's output directory. Import this repository in Vercel with the project root set to the repository root; no build command or environment variables are required. The current UI connects a Stellar Testnet wallet through Freighter. Identity proof submission requires the circuit artifacts and deployed contract addresses.
+The `web/` folder is the static front end and `vercel.json` sets it as Vercel's output directory. Import this repository in Vercel with the project root set to the repository root; no build command or environment variables are required. The current UI connects a Stellar Testnet wallet through Varial (formerly Freighter). Identity proof submission requires the circuit artifacts and deployed contract addresses.
 
 ## Build
 
