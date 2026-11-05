@@ -39,20 +39,26 @@
       if (network.error) throw new Error(network.error.message || 'Could not read the wallet network.');
       const isTestnet = network.networkPassphrase === 'Test SDF Network ; September 2015' || network.network === 'TESTNET';
       const networkName = isTestnet ? 'Stellar Testnet' : network.network === 'PUBLIC' ? 'Stellar Mainnet' : network.network || 'Other Stellar network';
+      headerNetwork.textContent = networkName;
+      walletNetwork.textContent = networkName;
+      networkStatus.classList.toggle('off-testnet', !isTestnet);
+      if (!isTestnet) {
+        walletAddress.textContent = 'Not connected';
+        verifyButton.disabled = true;
+        setupNote.textContent = `Varial is on ${networkName}. Switch it to Stellar Testnet before connecting.`;
+        notify(`Switch Varial to Stellar Testnet first. Current network: ${networkName}.`);
+        connectButton.textContent = 'Connect wallet';
+        return;
+      }
 
       const result = await wallet.requestAccess();
       if (result.error) throw new Error(result.error.message || 'Wallet access denied.');
       const address = result.address;
       walletAddress.textContent = `${address.slice(0, 8)}…${address.slice(-6)}`;
       connectButton.textContent = `${address.slice(0, 5)}…${address.slice(-4)} ✓`;
-      headerNetwork.textContent = networkName;
-      walletNetwork.textContent = networkName;
-      networkStatus.classList.toggle('off-testnet', !isTestnet);
-      verifyButton.disabled = !isTestnet;
-      setupNote.textContent = isTestnet
-        ? 'Connect a deployed Stello verifier to submit a proof.'
-        : `Connected on ${networkName}. Switch to Stellar Testnet to use Stello.`;
-      notify(isTestnet ? 'Wallet connected.' : `Wallet connected on ${networkName}. Switch to Testnet to use Stello.`);
+      verifyButton.disabled = false;
+      setupNote.textContent = 'Connect a deployed Stello verifier to submit a proof.';
+      notify('Wallet connected on Stellar Testnet.');
     } catch (error) {
       connectButton.textContent = 'Connect wallet';
       notify(error instanceof Error ? error.message : 'Could not connect wallet.');
