@@ -34,8 +34,8 @@
       }
       const network = await wallet.getNetwork();
       if (network.error) throw new Error(network.error.message || 'Could not read the wallet network.');
-      if (network.network !== 'TESTNET') {
-        notify('Switch Freighter to Stellar Testnet first.');
+      if (network.networkPassphrase !== 'Test SDF Network ; September 2015') {
+        notify('Switch Varial to Stellar Testnet first.');
         connectButton.textContent = 'Connect wallet';
         return;
       }
